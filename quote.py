@@ -260,6 +260,12 @@ def footer():
     st.markdown(
         """
         <style>
+        @media (max-width: 768px) {
+            .footer { 
+                display: none; 
+            }
+        }
+        
         .footer {
             position: fixed;
             bottom: 0;
