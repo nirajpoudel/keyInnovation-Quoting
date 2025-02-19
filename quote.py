@@ -255,3 +255,39 @@ elif option == 'Screen Print':
     else:
         st.info("Please enter a valid quantity and item cost.")
 
+
+def footer():
+    st.markdown(
+        """
+        <style>
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #f8f9fa;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            border-top: 1px solid #e7e7e7;
+        }
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        </style>
+        <div class="footer">
+            &copy; 2025 Key Innovations Inc. All rights reserved. 
+            <br>
+            Follow us on:
+            <a href="https://www.linkedin.com/company/keyinnovations" target="_blank">LinkedIn</a> |
+            <a href="https://twitter.com/keyinnovations" target="_blank">Twitter</a> |
+            <a href="https://www.instagram.com/key.innovations/" target="_blank">Instagram</a>
+            <a href="https://www.facebook.com/KeyInnovations/" target="_blank">Facebook</a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+footer()
+
