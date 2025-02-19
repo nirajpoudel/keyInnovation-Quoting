@@ -5,17 +5,6 @@ st.image("https://tscstatic.keyinnovations.ca/logo/logo_1T895ONEIG.png", width=1
 st.title('Quoting System')
 st.subheader('Key Innovation Inc.')
 
-# Inject JavaScript to bypass ngrok browser warning
-st.markdown("""
-    <script>
-        const newHeaders = new Headers();
-        newHeaders.append("ngrok-skip-browser-warning", "true");
-
-        fetch("/", { headers: newHeaders })
-            .then(response => console.log("Bypassed ngrok warning!"))
-            .catch(error => console.error("Error:", error));
-    </script>
-""", unsafe_allow_html=True)
 
 # Select the clothing method
 st.text('Which method are you using to calculate the price?')
@@ -27,28 +16,37 @@ option = st.selectbox(
 
 # DataFrame for pricing
 data = {
-    "Quantity": [12, 24, 48, 72, 144, 288],
-    "1,000": [3.60, 2.40, 2.40, 1.72, 1.32, 1.10],
-    "2,000": [3.85, 2.64, 2.64, 1.95, 1.54, 1.31],
-    "3,000": [4.10, 2.88, 2.88, 2.18, 1.76, 1.52],
-    "4,000": [4.35, 3.12, 3.12, 2.41, 1.98, 1.73],
-    "5,000": [4.60, 3.36, 3.36, 2.64, 2.20, 1.94],
-    "6,000": [4.85, 3.60, 3.60, 2.87, 2.42, 2.15],
+    "Quantity": [12, 18, 24, 36, 60, 120, 240, 600],
+    "1-1,000": [5.00, 4.00, 3.25, 2.75, 2.25, 2.00, 1.75, 1.50],
+    "1,000-2,000": [5.50, 4.40, 3.60, 3.05, 2.53, 2.27, 2.01, 1.75],
+    "2,001-3,000": [6.00, 4.80, 3.95, 3.35, 2.81, 2.54, 2.27, 2.00],
+    "3,001-4,000": [6.50, 5.20, 4.30, 3.65, 3.09, 2.81, 2.53, 2.25],
+    "4,001-5,000": [7.00, 5.60, 4.65, 3.95, 3.37, 3.08, 2.79, 2.50],
+    "5,001-6,000": [7.50, 6.00, 5.00, 4.25, 3.65, 3.35, 3.05, 2.75],
+    "6,001-7,000": [8.00, 6.40, 5.35, 4.55, 3.93, 3.62, 3.31, 3.00],
+    "7,001-8,000": [8.50, 6.80, 5.70, 4.85, 4.21, 3.89, 3.57, 3.25],
+    "8,001-9,000": [9.00, 7.20, 6.05, 5.15, 4.49, 4.16, 3.83, 3.50],
+    "9,001-10,000": [9.50, 7.60, 6.40, 5.45, 4.77, 4.43, 4.09, 3.75],
+    "10,001-11,000": [10.00, 8.00, 6.75, 5.75, 5.05, 4.70, 4.35, 4.00],
+    "11,001-12,000": [10.50, 8.40, 7.10, 6.05, 5.33, 4.97, 4.61, 4.25],
+    "12,001-13,000": [11.00, 8.80, 7.45, 6.35, 5.61, 5.24, 4.87, 4.50],
+    "13,001-14,000": [11.50, 9.20, 7.80, 6.65, 5.89, 5.51, 5.13, 4.75],
+    "14,001-15,000": [12.00, 9.60, 8.15, 6.95, 6.17, 5.78, 5.39, 5.00],
+    "15,001-16,000": [12.50, 10.00, 8.50, 7.25, 6.45, 6.05, 5.65, 5.25],
+    "16,001-17,000": [13.00, 10.40, 8.85, 7.55, 6.73, 6.32, 5.91, 5.50],
+    "17,001-18,000": [13.50, 10.80, 9.20, 7.85, 7.01, 6.59, 6.17, 5.75],
+    "18,001-19,000": [14.00, 11.20, 9.55, 8.15, 7.29, 6.86, 6.43, 6.00],
+    "19,001-20,000": [14.50, 11.60, 9.90, 8.45, 7.57, 7.13, 6.69, 6.25]
 }
 df = pd.DataFrame(data)
 
-
-net_value = 0  # Initialize net value
+net_value = 0
 
 if option == 'Embroidery':
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        quantity_options = ["Select Quantity"] + df["Quantity"].astype(str).tolist() + ["Custom"]
-        quantity = st.selectbox("Select Quantity", quantity_options, index=0)
-        custom_quantity = None
-        if quantity == "Custom":
-            custom_quantity = st.number_input("Enter Custom Quantity", min_value=1, step=1)
+        quantity = st.number_input("Enter Quantity", min_value=1, step=1)
 
     with col2:
         stitch_count = st.selectbox(
@@ -60,13 +58,12 @@ if option == 'Embroidery':
     with col3:
         item_price = st.text_input('Item Cost')
 
-    if (quantity != "Select Quantity" or custom_quantity) and stitch_count != "Select Stitch Count" and item_price:
+    if quantity and stitch_count != "Select Stitch Count" and item_price:
         try:
             item_price = float(item_price)
-            final_quantity = int(custom_quantity) if custom_quantity else int(quantity)
-            closest_quantity = min(df["Quantity"], key=lambda x: abs(x - final_quantity))
+            closest_quantity = min(df["Quantity"], key=lambda x: abs(x - quantity))
             price = df[df["Quantity"] == closest_quantity][stitch_count].values[0]
-            net_value = final_quantity * (price + item_price)
+            net_value = quantity * (price + item_price)
 
             margin_data = [
                 (0, 0.4), (150, 0.5), (210, 0.525), (275, 0.55), (345, 0.575), (840, 0.6),
@@ -81,7 +78,7 @@ if option == 'Embroidery':
 
             margin_percentage = (1 - margin) * 100
             total_selling_price = net_value / margin
-            unit_price = total_selling_price / final_quantity
+            unit_price = total_selling_price / quantity
 
             col1, col2, col3 = st.columns(3)
 
@@ -96,6 +93,7 @@ if option == 'Embroidery':
 
         except ValueError:
             st.warning("Please enter a valid item cost.")
+
 
 elif option == 'Screen Print':
     #st.text('You selected Screen Print.')
