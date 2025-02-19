@@ -1,6 +1,10 @@
 import streamlit as st
 import pandas as pd
 
+st.set_page_config(
+    page_title="Key Innovations Inc.",
+    page_icon="https://tscstatic.keyinnovations.ca/logo/logo_1T895ONEIG.png"
+)
 st.image("https://tscstatic.keyinnovations.ca/logo/logo_1T895ONEIG.png", width=150)
 st.title('Quoting System')
 st.subheader('Key Innovation Inc.')
