@@ -21,7 +21,7 @@ option = st.selectbox(
 
 # DataFrame for pricing 
 data = {
-    "Quantity": ["0-12", "13-18", "19-24", "25-36", "37-60", "61-120", "121-240", "241-600"],
+    "Quantity": ["0-11", "12-17", "18-23", "24-35", "36-59", "60-119", "120-239", "240-600"],
     "1-1,000": [5.00, 4.00, 3.25, 2.75, 2.25, 2.00, 1.75, 1.50],
     "1,000-2,000": [5.50, 4.40, 3.60, 3.05, 2.53, 2.27, 2.01, 1.75],
     "2,001-3,000": [6.00, 4.80, 3.95, 3.35, 2.81, 2.54, 2.27, 2.00],
@@ -68,14 +68,14 @@ if option == 'Embroidery':
             # ✅ Find the correct quantity tier or use the last tier if above max
             # Mapping quantity to its range index
             quantity_tiers = {
-                "0-12": range(0, 13),
-                "13-18": range(13, 19),
-                "19-24": range(19, 25),
-                "25-36": range(25, 37),
-                "37-60": range(37, 61),
-                "61-120": range(61, 121),
-                "121-240": range(121, 241),
-                "241-600": range(241, 601)
+                "0-11": range(0, 12),
+                "12-17": range(12, 18),
+                "18-23": range(18, 24),
+                "24-35": range(24, 36),
+                "36-59": range(36, 60),
+                "60-119": range(60, 120),
+                "120-239": range(120, 240),
+                "240-600": range(240, 600)
             }
 
             # Select the correct range based on input quantity
@@ -199,27 +199,27 @@ elif option == 'Screen Print':
     # Determine the appropriate quantity range for pricing
     #"below 6", "6 to 12", "13 - 18", "19 - 24", "25 - 36", "37 - 48","49 - 72", "73 - 96", "97 - 144", "145 - 288", "289 - 500", "Above 500"
     df = pricing_data[selected_type]
-    if quantity <= 6:
+    if quantity <= 5:
         selected_range = "below 6"
-    elif 7 <= quantity <= 12:
+    elif 6 <= quantity <= 11:
         selected_range = "6 to 12"
-    elif 13 <= quantity <= 18:
+    elif 12 <= quantity <= 17:
         selected_range = "13 - 18"
-    elif 19 <= quantity <= 24:
+    elif 18 <= quantity <= 23:
         selected_range = "19 - 24"
-    elif 25 <= quantity <= 36:
+    elif 24 <= quantity <= 35:
         selected_range = "25 - 36"
-    elif 37 <= quantity <= 48:
+    elif 36 <= quantity <= 47:
         selected_range = "37 - 48"
-    elif 49 <= quantity <= 72:
+    elif 48 <= quantity <= 71:
         selected_range = "49 - 72"
-    elif 73 <= quantity <= 96:
+    elif 72 <= quantity <= 95:
         selected_range = "73 - 96"
-    elif 97 <= quantity <= 144:
+    elif 96 <= quantity <= 143:
         selected_range = "97 - 144"
-    elif 145 <= quantity <= 288:
+    elif 144 <= quantity <= 287:
         selected_range = "145 - 288"
-    elif 289 <= quantity <= 500:
+    elif 288 <= quantity <= 500:
         selected_range = "289 - 500"
 
     else:
