@@ -18,9 +18,10 @@ option = st.selectbox(
     ["Choose Option", "Embroidery", "Screen Print"]
 )
 
-# DataFrame for pricing
+
+# DataFrame for pricing 
 data = {
-    "Quantity": [12, 18, 24, 36, 60, 120, 240, 600],
+    "Quantity": ["0-12", "13-18", "19-24", "25-36", "37-60", "61-120", "121-240", "241-600"],
     "1-1,000": [5.00, 4.00, 3.25, 2.75, 2.25, 2.00, 1.75, 1.50],
     "1,000-2,000": [5.50, 4.40, 3.60, 3.05, 2.53, 2.27, 2.01, 1.75],
     "2,001-3,000": [6.00, 4.80, 3.95, 3.35, 2.81, 2.54, 2.27, 2.00],
@@ -60,13 +61,27 @@ if option == 'Embroidery':
         )
     
     with col3:
-        item_price = st.text_input('Item Cost')
+        item_price = st.number_input('Item Cost', min_value=0.0, step=0.01)  # ✅ Fixed input
 
     if quantity and stitch_count != "Select Stitch Count" and item_price:
         try:
-            item_price = float(item_price)
-            closest_quantity = min(df["Quantity"], key=lambda x: abs(x - quantity))
-            price = df[df["Quantity"] == closest_quantity][stitch_count].values[0]
+            # ✅ Find the correct quantity tier or use the last tier if above max
+            # Mapping quantity to its range index
+            quantity_tiers = {
+                "0-12": range(0, 13),
+                "13-18": range(13, 19),
+                "19-24": range(19, 25),
+                "25-36": range(25, 37),
+                "37-60": range(37, 61),
+                "61-120": range(61, 121),
+                "121-240": range(121, 241),
+                "241-600": range(241, 601)
+            }
+
+            # Select the correct range based on input quantity
+            selected_range = next((key for key, val in quantity_tiers.items() if quantity in val), "241-600")
+            price = df[df["Quantity"] == selected_range][stitch_count].values[0]
+
             net_value = quantity * (price + item_price)
 
             margin_data = [
