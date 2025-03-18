@@ -10,14 +10,14 @@ st.title('Quoting System')
 st.subheader('Key Innovation Inc.')
 
 
+
 # Select the clothing method
-st.text('Which method are you using to calculate the price?')
+#st.text('Which method are you using to calculate the price?')
 
-option = st.selectbox(
+option = st.segmented_control(
     "Select an option:", 
-    ["Choose Option", "Embroidery", "Screen Print", "Embroidery & Screen Print"]
+    ["Embroidery", "Screen Print", "Embroidery & Screen Print"]
 )
-
 
 # DataFrame for pricing 
 data = {
@@ -43,6 +43,7 @@ data = {
     "18,001-19,000": [14.00, 11.20, 9.55, 8.15, 7.29, 6.86, 6.43, 6.00],
     "19,001-20,000": [14.50, 11.60, 9.90, 8.45, 7.57, 7.13, 6.69, 6.25]
 }
+
 df = pd.DataFrame(data)
 
 net_value = 0
@@ -82,10 +83,10 @@ if option == 'Embroidery':
     # ✅ Calculate Net Value Before Margin Selection
     net_value = quantity * (item_price + stitch_price)
 
-    # ✅ Apply Manual Margin if selected
     if use_manual_margin:
         margin_percentage = st.slider("Select Margin (%)", min_value=1.0, max_value=99.0, step=0.5, value=60.0, format="%.2f%%")
-        margin = 1 - (margin_percentage / 100)  
+        margin = margin_percentage / 100  # Manual margin stored as decimal
+        margin_display = f"{margin_percentage:.2f}%"  # Display the exact selected percentage
     else:
         # ✅ Automatic Margin Selection
         margin_data = [
@@ -93,46 +94,47 @@ if option == 'Embroidery':
             (840, 0.6), (1563, 0.625), (2600, 0.65), (4290, 0.66), (6030, 0.67)
         ]
         margin = next((rate for threshold, rate in reversed(margin_data) if net_value >= threshold), 0.67)
+        margin_display = f"{(1 - margin) * 100:.2f}%"  # Convert automatic margin correctly
 
+    # 📝 Storing the Correct Margin Format in Entry
     if st.button("➕ Add Entry"):
         if quantity and stitch_count and item_price:
-            total_selling_price = net_value / (1 - margin)  
+            total_selling_price = net_value / (1 - margin)
+            unit_selling_price = total_selling_price / quantity  
             entry = {
                 "Quantity": quantity,
                 "Stitch Count": stitch_count,
-                "Item Price": item_price,
-                "Stitch Price Per Unit": stitch_price,
-                "Total Cost": net_value,
-                "Margin": margin,
-                "Selling Price": total_selling_price
+                "Total Net Cost": f"${net_value:,.2f}",
+                "Margin": margin_display,  
+                "Unit Selling Price": f"${unit_selling_price:.2f}",
+                "Total Selling Price": f"${total_selling_price:.2f}"
             }
             st.session_state.entries.append(entry)
 
+
     if st.session_state.entries:
         st.subheader("Pricing Breakdown")
-
         for i, entry in enumerate(st.session_state.entries):
-            unit_price = entry["Selling Price"] / entry["Quantity"]
-            st.text("===========================================================================")
-
+            st.text("==========================================================================")
             st.write(f"### Entry {i+1}")
-
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric(label="📌 Quantity", value=entry["Quantity"])
             with col2:
                 st.metric(label="🪡 Stitch Count", value=entry["Stitch Count"])
             with col3:
-                st.metric(label="💰 Item Cost", value=f"${entry['Item Price']:.2f}")
-
+                st.metric(label="💰 Total Net Cost", value=entry["Total Net Cost"])
+            
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric(label="🪡 Stitch Price (per unit)", value=f"${entry['Stitch Price Per Unit']:.2f}")
-            with col2:
-                st.metric(label=f"📊 Unit Price (+{entry['Margin']*100:.2f}% Margin)", value=f"${unit_price:.2f}")
-            with col3:
-                st.metric(label="💰 Total Selling Price", value=f"${entry['Selling Price']:.2f}")
+                st.metric(label="📈 Margin", value=entry["Margin"])
+                #st.metric(label="📊 Margin", value=f"{(entry['Margin']) * 100:.2f}%")
 
+            with col2:
+                st.metric(label=f"📊 Unit Price", value=entry["Unit Selling Price"])
+            with col3:
+                st.metric(label="💰 Total Selling Price", value=entry["Total Selling Price"])
+        
             col1, col2 = st.columns(2)
             with col1:
                 if st.button(f"❌ Delete {i+1}", key=f"delete_{i}"):
@@ -140,16 +142,6 @@ if option == 'Embroidery':
                     st.rerun()
 
         st.text("===========================================================================")
-        st.subheader("Final Pricing Summary")
-
-        total_cost = sum(entry['Total Cost'] for entry in st.session_state.entries)
-        total_selling_price = sum(entry['Selling Price'] for entry in st.session_state.entries)  
-
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric(label="📊 Total Cost", value=f"${total_cost:.2f}")
-        with col2:
-            st.metric(label="💸 Total Selling Price", value=f"${total_selling_price:.2f}")
 
         if st.button("🔄 Reset Entries"):
             st.session_state.entries = []
@@ -294,95 +286,76 @@ elif option == 'Screen Print':
 
         for i, entry in enumerate(st.session_state.entries_screenprint):
             st.text("===========================================================================")
-
+            
             st.write(f"### Entry {i+1}")
 
-            col1, col2, col3, col4 = st.columns(4)
+            col1, col2, col3 = st.columns(3)
+
             with col1:
-                st.metric(label="📌 Quantity", value=entry["Quantity"])
+                st.metric(label="✅ Quantity", value=entry["Quantity"])
+                st.metric(label="💰 Total Net Cost", value=f"${entry['Total Cost']:.2f}")
+                   
             with col2:
-                st.metric(label="🖨️ Print Type", value=entry["Print Type"][:7])
-            with col3:
                 st.metric(label="📏 Print Size", value=entry["Print Size"])
-            with col4:
-                st.metric(label="⚙️ Options", value=entry["Options"]) 
-
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.metric(label="💰 Item Cost", value=f"${entry['Item Cost']:.2f}")
-            with col2:
-                st.metric(label="🖨️ Base Price Per Unit", value=f"${entry['Base Price Per Unit']:.2f}")
+                st.metric(label="📊 Margin", value=f"{(1 - entry['Margin']) * 100:.2f}%")
+                
             with col3:
-                st.metric(label=f"📊 Unit Price (+{(1 - entry['Margin']) * 100:.2f}% Margin)", value=f"${entry['Unit Price After Margin']:.2f}")
-            with col4:
-                st.metric(label="💸 Total Selling Price", value=f"${entry['Total Selling Price']:.2f}")
+                st.metric(label="🎨 Print Option", value=entry["Options"])
+                st.metric(label="💸 Unit Selling Price", value=f"${entry['Unit Price After Margin']:.2f}")
+            st.metric(label="💵 Total Selling Price", value=f"${entry['Total Selling Price']:.2f}")
 
-
-
+            # Delete Button
             if st.button(f"❌ Delete {i+1}", key=f"delete_{i}"):
                 del st.session_state.entries_screenprint[i]
                 st.rerun()
-
-    # --- Final Pricing Summary ---
-    if st.session_state.entries_screenprint:
-        st.text("===========================================================================")
-        st.subheader("Final Pricing Summary")
-
-        total_cost_final = sum(entry['Total Cost'] for entry in st.session_state.entries_screenprint)
-        total_selling_price_final = sum(entry['Total Selling Price'] for entry in st.session_state.entries_screenprint)
-
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric(label="📊 Total Cost", value=f"${total_cost_final:.2f}")
-        with col2:
-            st.metric(label="💸 Total Selling Price", value=f"${total_selling_price_final:.2f}")
-
         if st.button("🔄 Reset Entries"):
             st.session_state.entries_screenprint = []
             st.rerun()
 
 
 elif option == 'Embroidery & Screen Print':
-    pass
+    st.text('\nDevelopment in Progress.......')
 
 def footer():
-    st.markdown(
-        """
-        <style>
-        @media (max-width: 768px) {
-            .footer { 
-                display: none; 
-            }
-        }
-        
-        .footer {
+    # Get the current theme settings from Streamlit
+    theme_bg = st.get_option("theme.backgroundColor")
+    theme_text = st.get_option("theme.textColor")
+    theme_primary = st.get_option("theme.primaryColor")
+
+    footer_html = f"""
+    <style>
+        @media (max-width: 768px) {{
+            .footer {{ display: none; }}
+        }}
+
+        .footer {{
             position: fixed;
             bottom: 0;
             width: 100%;
-            background-color: #f8f9fa;
+            background-color: {theme_bg};  /* Uses Streamlit theme background */
+            color: {theme_text};  /* Uses Streamlit theme text color */
             text-align: center;
             padding: 10px;
             font-size: 14px;
-            border-top: 1px solid #e7e7e7;
-        }
-        .footer a {
-            color: #007bff;
+            border-top: 1px solid rgba(255, 255, 255, 0.2); /* Semi-transparent border */
+        }}
+        .footer a {{
+            color: {theme_primary};  /* Uses Streamlit theme primary color */
             text-decoration: none;
             margin: 0 10px;
-        }
-        </style>
-        <div class="footer">
-            &copy; 2025 Key Innovations Inc. All rights reserved. 
-            <br>
-            Follow us on:
-            <a href="https://www.linkedin.com/company/keyinnovations" target="_blank">LinkedIn</a> |
-            <a href="https://twitter.com/keyinnovations" target="_blank">Twitter</a> |
-            <a href="https://www.instagram.com/key.innovations/" target="_blank">Instagram</a>
-            <a href="https://www.facebook.com/KeyInnovations/" target="_blank">Facebook</a>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+        }}
+    </style>
+    <div class="footer">
+        &copy; 2025 Key Innovations Inc. All rights reserved. 
+        <br>
+        Follow us on:
+        <a href="https://www.linkedin.com/company/keyinnovations" target="_blank">LinkedIn</a> |
+        <a href="https://twitter.com/keyinnovations" target="_blank">Twitter</a> |
+        <a href="https://www.instagram.com/key.innovations/" target="_blank">Instagram</a> |
+        <a href="https://www.facebook.com/KeyInnovations/" target="_blank">Facebook</a>
+    </div>
+    """
+
+    st.markdown(footer_html, unsafe_allow_html=True)
 
 footer()
-
